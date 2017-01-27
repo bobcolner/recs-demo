@@ -1,0 +1,9 @@
+flask
+flask-debugtoolbar
+flask-debugtoolbar-lineprofilerpanel
+boto3
+flywheel==0.4.11
+zappa
+
+ipython
+ptpython

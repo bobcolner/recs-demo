@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Zappa Test</title>
+    <link rel="icon" href="data:;base64,iVBORw0KGgo=">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <meta name="intercoolerjs:use-actual-http-method" content="true"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/css/materialize.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  </head>
+  <body class="grey lighten-4">  
+    <!-- Dropdown Structure -->
+    <ul id="dropdown1" class="dropdown-content">
+      <li><a class="blue-text" href="{{ url_for('index', category='Accessories') }}">Accessories</a></li>
+      <li><a class="blue-text"  href="{{ url_for('index', category='Clothing') }}">Clothing</a></li>
+      <li><a class="blue-text"  href="{{ url_for('index', category='Shoes') }}">Shoes</a></li>
+      <li class="divider"></li>
+      <li><a class="red-text"  href="{{ url_for('index') }}">ALL</a></li>
+    </ul>
+    <div class="navbar-fixed">
+      <nav class="red">
+        <div class="nav-wrapper container">
+          <!-- branding -->
+          <a ic-get-from="/random" class="brand-logo left"><b>JACK</b><span>THREADS</span></a>
+          <!-- category dropdown -->
+          <ul class="right">
+            <li><a class="dropdown-button" href="#!" data-activates="dropdown1">Categories<i class="material-icons right">arrow_drop_down</i></a></li>
+          </ul>          
+        </div>
+    <!-- loading indiciator -->
+    <div class="progress" id="indicator" style="display: none; margin: 0;">
+      <div class="indeterminate"></div>
+    </div>
+  </nav>
+
+</div>
+<div style="height: 20px"></div>
+<div class="row" id="prod_row">
+  {% include "partials/prod_card.html" %}
+</div>
+  <script src="https://code.jquery.com/jquery-2.2.4.min.js" integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44=" crossorigin="anonymous"></script>
+  <!-- <script src="https://code.jquery.com/jquery-3.1.1.min.js" integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8=" crossorigin="anonymous"></script> -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.98.0/js/materialize.min.js"></script>    
+  <script src="https://intercoolerreleases-leaddynocom.netdna-ssl.com/intercooler-1.0.3.min.js"></script>
+</body>
+</html>

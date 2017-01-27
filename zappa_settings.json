@@ -1,0 +1,31 @@
+{
+    "dev": {
+        "project_name": "recs-demo",
+        "domain": "demo.stonegrowth.com",
+        "app_function": "server.app", 
+        "memory_size": 128,
+        "aws_region": "us-east-1",
+        "lets_encrypt_key": "s3://recs-demo-app/account.key",
+        "lets_encrypt_expression": "rate(20 days)",
+        "timeout_seconds": 90,
+        "s3_bucket": "recs-demo-app",
+        "aws_region": "us-east-1",
+        "remote_env": "s3://recs-demo-app/remote_env.json",
+        "cache_cluster_enabled": false,
+        "cache_cluster_size": 0.5,
+        "cloudwatch_log_level": "OFF",
+        "cloudwatch_data_trace": true,
+        "cloudwatch_metrics_enabled": true,
+        "cors": true,
+        "debug": true,
+        "delete_local_zip": true,
+        "delete_s3_zip": true,
+        "keep_warm": true,
+        "keep_warm_expression": "rate(4 minutes)",
+        "use_precompiled_packages": true
+    },
+    "prod": {
+        "extend": "dev",
+        "environment_variables": {"app_env": "zappa_prod"}
+    }
+}
