@@ -2,7 +2,6 @@ import os
 import simplejson as json
 import flask
 from flask_debugtoolbar import DebugToolbarExtension
-import dynomodb_schema as ddb
 
 
 # start flask app
@@ -38,7 +37,7 @@ def index(page=1):
     category = flask.request.args.get('category', None)  # 'Clothing'
     global DATA
     DATA = []
-    with open('prod_recs.json') as json_data:
+    with open('./ignore/prod_recs.json') as json_data:
         DATA = json.load(json_data)
     if category:
         DATA = [d for d in DATA if d['cat_1'] == category]
@@ -65,12 +64,6 @@ def get_prods(page, size=12):
         item['recs'] = clean_recs
         clean_data.append(item)
     return clean_data
-
-
-@app.route('/get_recs/<pk>')  # e.g. b020c344c9534f8b557c
-def get_recs(pk):
-    rec = ddb.engine.get(ddb.ProdRecs, pkeys=[pk])
-    return json.dumps(rec[0].ddb_dump_()['recs'])
 
 
 @app.route('/app_env')
