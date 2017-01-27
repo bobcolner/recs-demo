@@ -13,8 +13,7 @@
         <span class="card-title activator grey-text text-darken-4">{{ prod['cat_1'] }} - {{ prod['cat_2'] }}<i class="material-icons right">shopping_cart</i></span>
         <p><a href="#">View Similar Products</a></p>
       </div>
-      <!-- <div class="card-reveal" style="background-image: url({{ prod['img_url'] }}); background-size: cover"> -->
-      <div class="card-reveal blue lighten-5">
+      <div class="card-reveal grey lighten-3">
         <span style="position: relative;" class="card-title grey-text text-darken-4">Recommendations<i class="material-icons right">close</i></span>
         <div>
           {% for sim_prod in prod['recs'] %}
