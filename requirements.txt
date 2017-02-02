@@ -2,8 +2,8 @@ flask
 flask-debugtoolbar
 flask-debugtoolbar-lineprofilerpanel
 boto3
-flywheel==0.4.11
+requests
 zappa
 
-ipython
+ipython==5.1
 ptpython

@@ -1,7 +1,7 @@
 import os
-import simplejson as json
 import flask
 from flask_debugtoolbar import DebugToolbarExtension
+import requests
 
 
 # start flask app
@@ -9,7 +9,7 @@ app = flask.Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('secret_key', default='sillysecret')
 
 # config debug tools
-app_env = os.getenv('app_env', default='else')
+app_env = os.getenv('app_env', default='dev')
 if 'dev' in app_env:
     app.debug = True
     app.config['DEBUG_TB_PROFILER_ENABLED'] = True
@@ -29,41 +29,34 @@ elif 'prod' in app_env:
 else:
     app.debug = True
 
-DATA = []
+api_url = 'https://api.productvision.io/v1'
+limit = '24'
 
 
 @app.route('/')
-def index(page=1):
-    category = flask.request.args.get('category', None)  # 'Clothing'
-    global DATA
-    DATA = []
-    with open('./ignore/prod_recs.json') as json_data:
-        DATA = json.load(json_data)
-    if category:
-        DATA = [d for d in DATA if d['cat_1'] == category]
-    products = get_prods(page)
-    return flask.render_template('base.html', products=products, page=page)
+def index():
+    category = flask.request.args.get('category', 'all')  # ['Clothing','Shoes','Accessories']
+    flask.session['category'] = category
+    resp = requests.get(api_url +
+        '/products?account=demo-jackthreads&limit={}'.format(limit))
+    products = resp.json()['products']
+    if category != 'all':
+        products = [prod for prod in products if prod['meta']['cat_1'] == category]
+    flask.session['latest'] = resp.json()['latest']
+    return flask.render_template('base.html', products=products)
 
 
-@app.route('/infiniscroll')
-def infiniscroll(page=2):
-    page = int(flask.request.args.get('page', page))
-    products = get_prods(page)
-    return flask.render_template('partials/prod_card.html', products=products, page=page)
-
-
-def get_prods(page, size=12):
-    first = page * size - size
-    last = page * size
-    clean_data = []
-    for item in DATA[first:last]:
-        clean_recs = []
-        for rec in item['recs']:
-            if rec['cat_2'] == item['cat_2'] and rec['distance'] < 70:
-                clean_recs.append(rec)
-        item['recs'] = clean_recs
-        clean_data.append(item)
-    return clean_data
+@app.route('/scroll')
+def scroll():
+    latest = flask.session['latest']
+    category = flask.session['category']
+    resp = requests.get(api_url +
+        '/products?account=demo-jackthreads&created_after={}&limit={}'.format(latest, limit))
+    products = products = resp.json()['products']
+    if category != 'all':
+        products = [prod for prod in products if prod['meta']['cat_1'] == category]
+    flask.session['latest'] = resp.json()['latest']
+    return flask.render_template('partials/prod_card.html', products=products)
 
 
 @app.route('/app_env')
