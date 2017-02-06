@@ -1,7 +1,8 @@
 {
     "dev": {
-        "project_name": "recs-demo",
+        "project_name": "demo-jackthreads",
         "domain": "demo.productvision.io",
+        // "domain": "demos.productvision.io",  --dev 
         "app_function": "server.app", 
         "memory_size": 512,
         "aws_region": "us-east-1",

@@ -26,12 +26,12 @@ if 'dev' in app_env:
         'flask_debugtoolbar_lineprofilerpanel.panels.LineProfilerPanel'
     ]
     toolbar = DebugToolbarExtension(app)
+    stage = 'dev'
 elif 'prod' in app_env:
     app.debug = False
-else:
-    app.debug = True
+    stage = 'v1'
 
-API_URL = 'https://api.productvision.io/dev'
+API_URL = 'https://api.productvision.io/{}'.format(stage)
 LIMIT = 18
 
 
@@ -43,9 +43,9 @@ def get_filter_prods(latest, category):
     else:
         adj_limit = LIMIT
 
-    resp = requests.get(headers={'x-api-key': 'demo-jackthreads-82A1'}, url=API_URL +
-        '/products?account=demo-jackthreads&created_after={}&limit={}'.format(latest, str(adj_limit)))
     try:
+        resp = requests.get(headers={'x-api-key': 'demo-jackthreads-82A1'}, url=API_URL +
+            '/products?created_after={}&limit={}'.format(latest, str(adj_limit)))
         body_data = resp.json()
     except:
         body_data = {}
