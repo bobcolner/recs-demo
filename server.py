@@ -1,6 +1,7 @@
 import os
 import flask
 from flask_debugtoolbar import DebugToolbarExtension
+from flask_debugtoolbar_lineprofilerpanel.profile import line_profile
 import requests
 
 
@@ -21,7 +22,8 @@ if 'dev' in app_env:
         'flask_debugtoolbar.panels.request_vars.RequestVarsDebugPanel',
         'flask_debugtoolbar.panels.template.TemplateDebugPanel',
         'flask_debugtoolbar.panels.logger.LoggingPanel',
-        'flask_debugtoolbar.panels.profiler.ProfilerDebugPanel'
+        'flask_debugtoolbar.panels.profiler.ProfilerDebugPanel',
+        'flask_debugtoolbar_lineprofilerpanel.panels.LineProfilerPanel'
     ]
     toolbar = DebugToolbarExtension(app)
 elif 'prod' in app_env:
@@ -29,39 +31,52 @@ elif 'prod' in app_env:
 else:
     app.debug = True
 
-api_url = 'https://api.productvision.io/v1'
-limit = '24'
+API_URL = 'https://api.productvision.io/dev'
+LIMIT = 18
+
+
+@line_profile
+def get_filter_prods(latest, category):
+
+    if category != 'all':
+        adj_limit = LIMIT * 3
+    else:
+        adj_limit = LIMIT
+
+    resp = requests.get(headers={'x-api-key': 'demo-jackthreads-82A1'}, url=API_URL +
+        '/products?account=demo-jackthreads&created_after={}&limit={}'.format(latest, str(adj_limit)))
+    try:
+        body_data = resp.json()
+    except:
+        body_data = {}
+
+    products = body_data.get('products', [])
+    next_latest = body_data.get('latest', 0)
+
+    if category != 'all':
+        products = [prod for prod in products if prod['meta']['cat_1'] == category]
+
+    return products[0:int(LIMIT)], next_latest
 
 
 @app.route('/')
+@line_profile
 def index():
-    category = flask.request.args.get('category', 'all')  # ['Clothing','Shoes','Accessories']
+    category = flask.request.args.get('category', 'all')
     flask.session['category'] = category
-    resp = requests.get(api_url +
-        '/products?account=demo-jackthreads&limit={}'.format(limit))
-    products = resp.json()['products']
-    if category != 'all':
-        products = [prod for prod in products if prod['meta']['cat_1'] == category]
-    flask.session['latest'] = resp.json()['latest']
+    products, latest = get_filter_prods(0, category)
+    flask.session['latest'] = latest
     return flask.render_template('base.html', products=products)
 
 
 @app.route('/scroll')
+@line_profile
 def scroll():
-    latest = flask.session['latest']
     category = flask.session['category']
-    resp = requests.get(api_url +
-        '/products?account=demo-jackthreads&created_after={}&limit={}'.format(latest, limit))
-    products = products = resp.json()['products']
-    if category != 'all':
-        products = [prod for prod in products if prod['meta']['cat_1'] == category]
-    flask.session['latest'] = resp.json()['latest']
+    latest = flask.session['latest']
+    products, new_latest = get_filter_prods(latest, category)
+    flask.session['latest'] = new_latest
     return flask.render_template('partials/prod_card.html', products=products)
-
-
-@app.route('/app_env')
-def app_env():
-    return app_env
 
 
 @app.route('/debug')

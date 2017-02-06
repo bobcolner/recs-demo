@@ -1,13 +1,12 @@
 {
-    "prod": {
-        "project_name": "zappa-recs-demo",
+    "dev": {
+        "project_name": "recs-demo",
         "domain": "demo.productvision.io",
         "app_function": "server.app", 
-        "memory_size": 128,
+        "memory_size": 512,
         "aws_region": "us-east-1",
         "lets_encrypt_key": "s3://demo.productvision.io/account.key",
-        // "lets_encrypt_expression": "rate(20 days)",
-        "timeout_seconds": 15,
+        "timeout_seconds": 10,
         "s3_bucket": "demo.productvision.io",
         "aws_region": "us-east-1",
         "remote_env": "s3://demo.productvision.io/remote_env.json",
@@ -23,5 +22,9 @@
         "keep_warm": true,
         "keep_warm_expression": "rate(4 minutes)",
         "use_precompiled_packages": true
+    },
+    "prod": {
+        "extends": "dev",
+        "debug": true
     }
 }
