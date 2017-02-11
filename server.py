@@ -1,11 +1,13 @@
 import os
+import simplejson as json
+from decimal import Decimal
 import flask
 from flask_debugtoolbar import DebugToolbarExtension
 from flask_debugtoolbar_lineprofilerpanel.profile import line_profile
-import requests
+import boto3
+from boto3.dynamodb.conditions import Key
 
 
-# start flask app
 app = flask.Flask(__name__)
 app.config['SECRET_KEY'] = os.getenv('secret_key', default='sillysecret')
 
@@ -26,69 +28,105 @@ if 'dev' in app_env:
         'flask_debugtoolbar_lineprofilerpanel.panels.LineProfilerPanel'
     ]
     toolbar = DebugToolbarExtension(app)
-    stage = 'dev'
 elif 'prod' in app_env:
     app.debug = False
-    stage = 'v1'
 
-API_URL = 'https://api.productvision.io/{}'.format(stage)
+# connect to dynamodb
+# table = 'products-{}'.format('app_env')
+TABLE = boto3.resource('dynamodb').Table('products-dev')
 LIMIT = 18
 
 
-@line_profile
-def get_filter_prods(latest, category):
-
-    if category != 'all':
-        adj_limit = LIMIT * 3
-    else:
-        adj_limit = LIMIT
-
-    try:
-        resp = requests.get(headers={'x-api-key': 'demo-jackthreads-82A1'}, url=API_URL +
-            '/products?created_after={}&limit={}'.format(latest, str(adj_limit)))
-        body_data = resp.json()
-    except:
-        body_data = {}
-
-    products = body_data.get('products', [])
-    next_latest = body_data.get('latest', 0)
-
-    if category != 'all':
-        products = [prod for prod in products if prod['meta']['cat_1'] == category]
-
-    return products[0:int(LIMIT)], next_latest
-
-
 @app.route('/')
+@app.route('/<account_slug>')  # 'demo-jackthreads-82A1', 'demo-cedarmoss-888888', 'demo-untuckit-888888', 'demo-dwr', 'demo-crateandbarrel', 'demo-needsupplyco'
 @line_profile
-def index():
-    category = flask.request.args.get('category', 'all')
-    flask.session['category'] = category
-    products, latest = get_filter_prods(0, category)
-    flask.session['latest'] = latest
-    return flask.render_template('base.html', products=products)
+def index(account_slug='cedarmoss'):
+
+    if account_slug == 'untuckit':
+        account = 'demo-untuckit-888888'
+        brand = 'UNTUCKit'
+        color = 'blue darken-4'
+    elif account_slug == 'jackthreads':
+        account = 'demo-jackthreads-82A1'
+        brand = 'JackThreads'
+        color = 'red lighten-1'
+    elif account_slug == 'cedarmoss':
+        account = 'demo-cedermoss-888888'
+        brand = 'Cedar & Moss'
+        color = 'teal'
+    elif account_slug == 'nsp':
+        account = 'demo-needsupplyco'
+        brand = 'Need Supply Co.'
+        color = 'grey darken-4'
+    elif account_slug == 'dwr':
+        account = 'demo-dwr'
+        brand = 'Design Within Reach'
+        color = 'deep-orange darken-2'
+
+    # category = flask.request.args.get('category', 'all')
+    # flask.session['category'] = category
+
+    response = TABLE.query(
+        IndexName='created_at',
+        KeyConditionExpression=Key('created_at').gt(0) & Key('account').eq(account),
+        ProjectionExpression='product_id, img_url, created_at, meta, recs',
+        Limit=LIMIT
+    )
+
+    flask.session['account'] = account
+    flask.session['LastEvaluatedKey'] = json.dumps(response['LastEvaluatedKey'])
+
+    products = response['Items']
+
+    # if account == 'demo-dwr':
+    #     products = filter_recs(products, key='cat_2')
+    # if account == 'demo-untuckit-888888':
+    #     products = filter_recs(products, key='category')
+
+    if flask.request.args.get('output', 'html') == 'json':
+        return json.dumps(products)
+    else:
+        return flask.render_template('base.html', brand=brand, color=color, products=products)
+
+
+def filter_recs(products, key):
+    filtered_prods = []
+    for prod in products:
+        filtered_recs = []
+        for rec in prod['recs']:
+            if key in rec and rec[key] == prod['meta'][key]:
+                filtered_recs.append(rec)
+                print(rec[key], prod['meta'][key])
+        if len(filtered_recs) > 1:
+            prod['recs'] = filtered_recs
+            filtered_prods.append(prod)
+    return filtered_prods
 
 
 @app.route('/scroll')
 @line_profile
 def scroll():
-    category = flask.session['category']
-    latest = flask.session['latest']
-    products, new_latest = get_filter_prods(latest, category)
-    flask.session['latest'] = new_latest
+    account = flask.session['account']
+    # category = flask.session['category']
+    LastEvaluatedKey = json.loads(flask.session['LastEvaluatedKey'])
+    if 'created_at' in LastEvaluatedKey:
+        LastEvaluatedKey['created_at'] = Decimal(LastEvaluatedKey['created_at'])
+    response = TABLE.query(
+        IndexName='created_at',
+        KeyConditionExpression=Key('created_at').gt(0) & Key('account').eq(account),
+        ProjectionExpression='product_id, img_url, created_at, meta, recs',
+        Limit=LIMIT,
+        ExclusiveStartKey=LastEvaluatedKey
+    )
+    products = response['Items']
+    flask.session['LastEvaluatedKey'] = json.dumps(response['LastEvaluatedKey'])
     return flask.render_template('partials/prod_card.html', products=products)
 
 
-@app.route('/debug')
-def debug():
-    assert app.debug is False
-
-
-@app.route('/random')
-def random():
-    import random
-    import string
-    return ''.join(random.choice(string.lowercase) for i in range(8))
+def filter_prod(products):
+    category = flask.session['category']
+    if category != 'all':
+        products = [prod for prod in products if prod['meta']['category'] == category]
 
 
 if __name__ == '__main__':

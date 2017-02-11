@@ -12,20 +12,22 @@
   <body class="grey lighten-4">  
     <!-- Dropdown Structure -->
     <ul id="dropdown1" class="dropdown-content">
-      <li><a class="blue-text" href="{{ url_for('index', category='Accessories') }}">Accessories</a></li>
-      <li><a class="blue-text"  href="{{ url_for('index', category='Clothing') }}">Clothing</a></li>
-      <li><a class="blue-text"  href="{{ url_for('index', category='Shoes') }}">Shoes</a></li>
+      <li><a class="blue-text"  href="{{ url_for('index', account_slug='jackthreads') }}">JackThreads</a></li>
+      <li><a class="blue-text"  href="{{ url_for('index', account_slug='dwr') }}">Design Within Reach</a></li>
+      <li><a class="blue-text"  href="{{ url_for('index', account_slug='nsp') }}">Needs Supply Co.</a></li>
+      <li><a class="blue-text"  href="{{ url_for('index', account_slug='cedarmoss') }}">Cedar & Moss</a></li>
+      <li><a class="blue-text" href="{{ url_for('index', account_slug='untuckit') }}">UNTUCKit</a></li>
       <li class="divider"></li>
       <li><a class="red-text"  href="{{ url_for('index') }}">ALL</a></li>
     </ul>
     <div class="navbar-fixed">
-      <nav class="red">
+      <nav class="{{ color }}">
         <div class="nav-wrapper container">
           <!-- branding -->
-          <a ic-get-from="/random" class="brand-logo left"><b>JACK</b><span>THREADS</span></a>
+          <a ic-get-from="/random" class="brand-logo left"><span><b>{{ brand }}</b></span></a>
           <!-- category dropdown -->
           <ul class="right">
-            <li><a class="dropdown-button" href="#!" data-activates="dropdown1">Categories<i class="material-icons right">arrow_drop_down</i></a></li>
+            <li><a class="dropdown-button" href="#!" data-activates="dropdown1">Demo Sites<i class="material-icons right">arrow_drop_down</i></a></li>
           </ul>          
         </div>
     <!-- loading indiciator -->

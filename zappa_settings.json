@@ -1,8 +1,7 @@
 {
     "dev": {
-        "project_name": "demo-jackthreads",
-        "domain": "demo.productvision.io",
-        // "domain": "demos.productvision.io",  --dev 
+        "project_name": "recs-demo",
+        "domain": "demos.productvision.io",
         "app_function": "server.app", 
         "memory_size": 512,
         "aws_region": "us-east-1",
@@ -22,10 +21,12 @@
         "delete_s3_zip": true,
         "keep_warm": true,
         "keep_warm_expression": "rate(4 minutes)",
-        "use_precompiled_packages": true
+        "use_precompiled_packages": true,
+        "slim_handler": false
     },
     "prod": {
         "extends": "dev",
+        "domain": "demo.productvision.io",
         "debug": true
     }
 }
